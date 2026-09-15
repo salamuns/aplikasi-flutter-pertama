@@ -1,4 +1,4 @@
-name: Build Flutter APK & Clean Repo
+name: Build Flutter APK
 
 on:
   push:
@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -26,20 +24,13 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Delete Android Folder From Repo
+      - name: Generate Android Files & Install Dependencies
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git rm -rf android || true
-          git commit -m "Clean android folder from repo" || true
-          git push origin main || git push origin master || true
-
-      - name: Force Clean & Rebuild Android
-        run: |
-          rm -rf android
           flutter create . --platforms=android --android-language kotlin
           flutter pub get
-          flutter build apk --release
+
+      - name: Build APK Release
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
