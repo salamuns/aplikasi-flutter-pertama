@@ -11,34 +11,47 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
-    );
-  }
-}
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Aplikasi Pertamaku'),
+          backgroundColor: Colors.blueAccent,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Elemen 1: Icon
+              const Icon(
+                Icons.flutter_dash,
+                size: 80,
+                color: Colors.blue,
+              ),
+              const SizedBox(height: 20),
+              
+              // Elemen 2: Teks
+              const Text(
+                'Halo! Selamat Datang.',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Latihan SnackBar'),
-        backgroundColor: Colors.teal,
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // 1. Buat SnackBar yang ingin ditampilkan
-            const snackBar = SnackBar(
-              content: Text('Halo! Ini pesan SnackBar.'),
-              duration: Duration(seconds: 2), // Durasi muncul (opsional)
-            );
-
-            // 2. Tampilkan SnackBar menggunakan ScaffoldMessenger
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          },
-          child: const Text('Tampilkan Pesan'),
+              // Elemen 3: Baris Tombol (Row)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('Tombol 1'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('Tombol 2'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
