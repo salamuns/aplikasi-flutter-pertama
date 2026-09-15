@@ -11,47 +11,54 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Aplikasi Pertamaku'),
-          backgroundColor: Colors.blueAccent,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Elemen 1: Icon
-              const Icon(
-                Icons.flutter_dash,
-                size: 80,
-                color: Colors.blue,
-              ),
-              const SizedBox(height: 20),
-              
-              // Elemen 2: Teks
-              const Text(
-                'Halo! Selamat Datang.',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
+      home: const HomePage(),
+    );
+  }
+}
 
-              // Elemen 3: Baris Tombol (Row)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('Tombol 1'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('Tombol 2'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+// 1. Ubah komponen utama menjadi StatefulWidget
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // Variabel penampung data yang akan berubah
+  int _jumlahKlik = 0;
+  String _pesan = 'Tombol belum ditekan';
+
+  // Fungsi untuk mengubah data
+  void _tambahKlik() {
+    // 2. Wajib gunakan setState() agar layar merespons perubahan!
+    setState(() {
+      _jumlahKlik++;
+      _pesan = 'Tombol sudah ditekan $_jumlahKlik kali!';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Aplikasi Interaktif'),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _pesan,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _tambahKlik, // Dipanggil saat tombol ditekan
+              child: const Text('Tekan Saya'),
+            ),
+          ],
         ),
       ),
     );
