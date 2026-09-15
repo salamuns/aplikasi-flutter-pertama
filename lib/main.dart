@@ -11,78 +11,85 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: UbahWarnaPage(),
+      home: InputTeksPage(),
     );
   }
 }
 
-class UbahWarnaPage extends StatefulWidget {
-  const UbahWarnaPage({super.key});
+class InputTeksPage extends StatefulWidget {
+  const InputTeksPage({super.key});
 
   @override
-  State<UbahWarnaPage> createState() => _UbahWarnaPageState();
+  State<InputTeksPage> createState() => _InputTeksPageState();
 }
 
-class _UbahWarnaPageState extends State<UbahWarnaPage> {
-  // Daftar pilihan warna yang mencolok
-  final List<Color> _daftarWarna = [
-    Colors.white,
-    Colors.redAccent,
-    Colors.greenAccent,
-    Colors.blueAccent,
-    Colors.orangeAccent,
-    Colors.purpleAccent,
-  ];
+class _InputTeksPageState extends State<InputTeksPage> {
+  // 1. Buat controller untuk menampung teks dari TextField
+  final TextEditingController _namaController = TextEditingController();
 
-  int _indexWarna = 0;
+  // Variabel untuk menampilkan hasil input di layar
+  String _hasilInput = 'Belum ada input';
 
-  void _gantiWarna() {
+  // 2. Wajib bersihkan controller saat halaman ditutup (mencegah memory leak)
+  @override
+  void dispose() {
+    _namaController.dispose();
+    super.dispose();
+  }
+
+  void _tampilkanTeks() {
     setState(() {
-      // Mengubah indeks warna berurutan
-      _indexWarna = (_indexWarna + 1) % _daftarWarna.length;
+      // 3. Ambil isi teks menggunakan properti .text milik controller
+      if (_namaController.text.isEmpty) {
+        _hasilInput = 'Kolom input tidak boleh kosong!';
+      } else {
+        _hasilInput = 'Halo, ${_namaController.text}!';
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Warna background berubah sesuai indeks
-      backgroundColor: _daftarWarna[_indexWarna],
       appBar: AppBar(
-        title: Text('Warna Ke-${_indexWarna + 1}'),
-        backgroundColor: Colors.black87,
+        title: const Text('Input Teks Flutter'),
+        backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white.withOpacity(0.8),
-              child: Text(
-                'Indeks Warna Saat Ini: $_indexWarna',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+            // Komponen Input Teks (TextField)
+            TextField(
+              controller: _namaController, // Pasang controller di sini
+              decoration: const InputDecoration(
+                labelText: 'Masukkan Nama Kamu',
+                hintText: 'Contoh: Budi',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
+
+            // Tombol untuk mengambil dan menampilkan nilai
             ElevatedButton(
+              onPressed: _tampilkanTeks,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              onPressed: () {
-                // Panggil fungsi saat ditekan
-                _gantiWarna();
-              },
-              child: const Text(
-                'KLIK UNTUK GANTI WARNA',
-                style: TextStyle(fontSize: 16),
+              child: const Text('Tampilkan Nama'),
+            ),
+            const SizedBox(height: 30),
+
+            // Teks hasil pembacaan input
+            Text(
+              _hasilInput,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
               ),
             ),
           ],
