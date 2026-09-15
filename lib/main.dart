@@ -9,54 +9,81 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      home: UbahWarnaPage(),
     );
   }
 }
 
-// 1. Ubah komponen utama menjadi StatefulWidget
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class UbahWarnaPage extends StatefulWidget {
+  const UbahWarnaPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<UbahWarnaPage> createState() => _UbahWarnaPageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  // Variabel penampung data yang akan berubah
-  int _jumlahKlik = 0;
-  String _pesan = 'Tombol belum ditekan';
+class _UbahWarnaPageState extends State<UbahWarnaPage> {
+  // Daftar pilihan warna yang mencolok
+  final List<Color> _daftarWarna = [
+    Colors.white,
+    Colors.redAccent,
+    Colors.greenAccent,
+    Colors.blueAccent,
+    Colors.orangeAccent,
+    Colors.purpleAccent,
+  ];
 
-  // Fungsi untuk mengubah data
-  void _tambahKlik() {
-    // 2. Wajib gunakan setState() agar layar merespons perubahan!
+  int _indexWarna = 0;
+
+  void _gantiWarna() {
     setState(() {
-      _jumlahKlik++;
-      _pesan = 'Tombol sudah ditekan $_jumlahKlik kali!';
+      // Mengubah indeks warna berurutan
+      _indexWarna = (_indexWarna + 1) % _daftarWarna.length;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Warna background berubah sesuai indeks
+      backgroundColor: _daftarWarna[_indexWarna],
       appBar: AppBar(
-        title: const Text('Aplikasi Interaktif'),
-        backgroundColor: Colors.blueAccent,
+        title: Text('Warna Ke-${_indexWarna + 1}'),
+        backgroundColor: Colors.black87,
+        foregroundColor: Colors.white,
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              _pesan,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.white.withOpacity(0.8),
+              child: Text(
+                'Indeks Warna Saat Ini: $_indexWarna',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: _tambahKlik, // Dipanggil saat tombol ditekan
-              child: const Text('Tekan Saya'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              ),
+              onPressed: () {
+                // Panggil fungsi saat ditekan
+                _gantiWarna();
+              },
+              child: const Text(
+                'KLIK UNTUK GANTI WARNA',
+                style: TextStyle(fontSize: 16),
+              ),
             ),
           ],
         ),
