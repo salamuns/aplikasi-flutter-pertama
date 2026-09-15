@@ -26,8 +26,8 @@ jobs:
 
       - name: Generate Android Files & Install Dependencies
         run: |
-          # --org memastikan package name aplikasi selalu sama: com.mycompany.aplikasi_flutter
-          flutter create . --platforms=android --android-language kotlin --org com.mycompany
+          # --org memastikan package name aplikasi selalu sama: com.oetankayoe.aplikasi_flutter
+          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           flutter pub get
 
       - name: Build APK Release
