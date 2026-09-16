@@ -24,10 +24,18 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Generate Android Files & Install Dependencies
+      - name: Backup & Regenerate Android
         run: |
-          # --org memastikan package name aplikasi selalu sama: com.oetankayoe.aplikasi_flutter
+          # 1. Simpan dulu pubspec.yaml kamu ke file sementara
+          cp pubspec.yaml pubspec.yaml.bak
+          
+          # 2. Buat folder android
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
+          
+          # 3. Kembalikan pubspec.yaml milikmu yang asli!
+          cp pubspec.yaml.bak pubspec.yaml
+          
+          # 4. Ambil dependency
           flutter pub get
 
       - name: Build APK Release
@@ -38,3 +46,4 @@ jobs:
         with:
           name: Flutter-APK-Release
           path: build/app/outputs/flutter-apk/app-release.apk
+ 
