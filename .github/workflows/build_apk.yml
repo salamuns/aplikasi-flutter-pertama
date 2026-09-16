@@ -24,19 +24,8 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Generate Android Files & Keep Pubspec
-        run: |
-          # 1. Simpan pubspec.yaml kamu agar versinya (misal 1.0.2+6) tidak hilang
-          cp pubspec.yaml pubspec.yaml.bak
-          
-          # 2. Generasi ulang folder android dengan Package Name com.oetankayoe
-          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
-          
-          # 3. Kembalikan pubspec.yaml asli milikmu yang sudah berisi versi baru
-          cp pubspec.yaml.bak pubspec.yaml
-          
-          # 4. Ambil dependency
-          flutter pub get
+      - name: Install Dependencies
+        run: flutter pub get
 
       - name: Build APK Release
         run: flutter build apk --release
