@@ -24,8 +24,19 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Install Dependencies
-        run: flutter pub get
+      - name: Generate Android Files & Secure Pubspec
+        run: |
+          # 1. Backup pubspec.yaml milikmu agar versi (misal 1.0.3+7) tidak hilang/di-reset
+          cp pubspec.yaml pubspec.yaml.bak
+          
+          # 2. Buat folder android secara otomatis
+          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
+          
+          # 3. Kembalikan pubspec.yaml milikmu yang berisi kode & versi terbaru
+          cp pubspec.yaml.bak pubspec.yaml
+          
+          # 4. Install dependencies
+          flutter pub get
 
       - name: Build APK Release
         run: flutter build apk --release
