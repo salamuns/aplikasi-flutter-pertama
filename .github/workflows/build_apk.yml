@@ -10,28 +10,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Mengambil kode dari repository
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
-      # 2. Setup Java untuk Android
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      # 3. Setup Flutter SDK
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
 
-      # 4. Install dependencies (tanpa flutter create yang merusak pubspec)
-      - name: Install Dependencies
-        run: flutter pub get
+      - name: Generate Android Files & Keep Pubspec
+        run: |
+          # 1. Simpan pubspec.yaml kamu agar versinya (misal 1.0.2+6) tidak hilang
+          cp pubspec.yaml pubspec.yaml.bak
+          
+          # 2. Generasi ulang folder android dengan Package Name com.oetankayoe
+          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
+          
+          # 3. Kembalikan pubspec.yaml asli milikmu yang sudah berisi versi baru
+          cp pubspec.yaml.bak pubspec.yaml
+          
+          # 4. Ambil dependency
+          flutter pub get
 
-      # 5. Rakit APK Release
       - name: Build APK Release
         run: flutter build apk --release
 
