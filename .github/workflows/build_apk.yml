@@ -40,7 +40,7 @@ jobs:
           flutter config --no-analytics
           cp pubspec.yaml pubspec.yaml.bak
           
-          # 1. Generate project Android dulu
+          # 1. Generate project Android
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
 
@@ -50,7 +50,7 @@ jobs:
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
-          # 2. SEKARANG buat Keystore & key.properties (SETELAH flutter create agar tidak tertimpa)
+          # 2. Buat Keystore dengan nilai permanen
           keytool -genkeypair -v \
             -keystore android/app/upload-keystore.jks \
             -keyalg RSA -keysize 2048 -validity 10000 \
@@ -59,6 +59,7 @@ jobs:
             -storepass "OetanKayoe123!" \
             -keypass "OetanKayoe123!"
 
+          # 3. Inject konfigurasi signing ke key.properties
           cat <<EOF > android/key.properties
           storePassword=OetanKayoe123!
           keyPassword=OetanKayoe123!
@@ -66,36 +67,15 @@ jobs:
           storeFile=upload-keystore.jks
           EOF
 
-          # 3. Masukkan konfigurasi signingReport ke build.gradle
-          cat <<EOF >> android/app/build.gradle
-
-          android {
-              signingConfigs {
-                  release {
-                      def keystoreProperties = new Properties()
-                      def keystorePropertiesFile = rootProject.file('key.properties')
-                      if (keystorePropertiesFile.exists()) {
-                          keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-                          keyAlias keystoreProperties['keyAlias']
-                          keyPassword keystoreProperties['keyPassword']
-                          storeFile file(keystoreProperties['storeFile'])
-                          storePassword keystoreProperties['storePassword']
-                      }
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                  }
-              }
-          }
-          EOF
-
           flutter pub get
           dart run flutter_launcher_icons
 
       - name: Build APK Release (Signed)
-        run: flutter build apk --release --target-platform android-arm64
+        run: |
+          flutter build apk --release \
+            --target-platform android-arm64 \
+            --build-name=1.0.1 \
+            --build-number=2
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
