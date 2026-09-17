@@ -10,112 +10,139 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Daftar Dinamis',
+      title: 'Oetan Kayoe App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const DynamicListScreen(),
+      home: const MainNavigationScreen(),
     );
   }
 }
 
-class DynamicListScreen extends StatefulWidget {
-  const DynamicListScreen({super.key});
+class MainNavigationScreen extends StatefulWidget {
+  const MainNavigationScreen({super.key});
 
   @override
-  State<DynamicListScreen> createState() => _DynamicListScreenState();
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _DynamicListScreenState extends State<DynamicListScreen> {
-  final List<String> _items = ['Item 1', 'Item 2', 'Item 3'];
-  final TextEditingController _textController = TextEditingController();
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  // 1. Variabel penanda halaman mana yang sedang aktif (0 = Beranda, 1 = Daftar, 2 = Profil)
+  int _selectedIndex = 0;
 
-  void _addItem(String title) {
-    if (title.trim().isEmpty) return;
+  // 2. Daftar halaman yang akan ditampilkan sesuai menu bawah yang diklik
+  final List<Widget> _pages = [
+    const HomeScreen(),
+    const ListScreen(),
+    const ProfileScreen(),
+  ];
+
+  // 3. Fungsi untuk mengupdate posisi tab yang dipilih
+  void _onItemTapped(int index) {
     setState(() {
-      _items.add(title);
+      _selectedIndex = index;
     });
-    _textController.clear();
-  }
-
-  void _removeItem(int index) {
-    setState(() {
-      _items.removeAt(index);
-    });
-  }
-
-  void _showAddDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Tambah Item Baru'),
-          content: TextField(
-            controller: _textController,
-            decoration: const InputDecoration(
-              hintText: 'Masukkan nama item...',
-              border: OutlineInputBorder(),
-            ),
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _addItem(_textController.text);
-                Navigator.pop(context);
-              },
-              child: const Text('Tambah'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Item Dinamis'),
+        title: const Text('Oetan Kayoe App'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: _items.isEmpty
-          ? const Center(
-              child: Text(
-                'Belum ada item. Klik tombol + untuk menambah.',
-                style: TextStyle(color: Colors.grey),
-              ),
-            )
-          : ListView.builder(
-              itemCount: _items.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text('${index + 1}'),
-                    ),
-                    title: Text(_items[index]),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red), // 'const' di depan Icon sudah dihapus
-                      onPressed: () => _removeItem(index),
-                    ),
-                  ),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddDialog,
-        tooltip: 'Tambah Item',
-        child: const Icon(Icons.add),
+      // Menampilkan halaman sesuai indeks yang dipilih
+      body: _pages[_selectedIndex],
+      // Menu Navigasi Bawah
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Beranda',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt),
+            label: 'Daftar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profil',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// --- Komponen Layar / Halaman ---
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.home, size: 80, color: Colors.blue),
+          SizedBox(height: 16),
+          Text(
+            'Selamat Datang di Beranda',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ListScreen extends StatelessWidget {
+  const ListScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: 10,
+      itemBuilder: (context, index) {
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: ListTile(
+            leading: CircleAvatar(child: Text('${index + 1}')),
+            title: Text('Item Menu ${index + 1}'),
+            subtitle: const Text('Deskripsi singkat item'),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            radius: 50,
+            child: Icon(Icons.person, size: 50),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Pengguna Oetan Kayoe',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Text('user@oetankayoe.com', style: TextStyle(color: Colors.grey)),
+        ],
       ),
     );
   }
