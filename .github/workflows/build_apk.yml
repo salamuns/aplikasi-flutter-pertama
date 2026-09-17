@@ -39,6 +39,11 @@ jobs:
         run: |
           flutter config --no-analytics
           
+          # Generate folder android bawaan Flutter
+          cp pubspec.yaml pubspec.yaml.bak
+          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
+          cp pubspec.yaml.bak pubspec.yaml
+
           # Generasi keystore permanen
           keytool -genkey -v -keystore android/app/release.keystore \
             -alias oetankayoe \
