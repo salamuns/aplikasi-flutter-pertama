@@ -105,7 +105,7 @@ class _DynamicListScreenState extends State<DynamicListScreen> {
                     ),
                     title: Text(_items[index]),
                     trailing: IconButton(
-                      icon: const Icon(Colors.delete, color: Colors.red),
+                      icon: const Icon(Icons.delete, color: Colors.red), // 'const' di depan Icon sudah dihapus
                       onPressed: () => _removeItem(index),
                     ),
                   ),
@@ -120,4 +120,3 @@ class _DynamicListScreenState extends State<DynamicListScreen> {
     );
   }
 }
- 
