@@ -39,33 +39,36 @@ jobs:
         run: |
           flutter config --no-analytics
           
-          # 1. Buat struktur folder android bawaan Flutter
+          # 1. Simpan dulu build.gradle.kts buatan kita agar tidak ditimpa flutter create
+          if [ -f "android/app/build.gradle.kts" ]; then
+            cp android/app/build.gradle.kts build.gradle.kts.bak
+          fi
+
           cp pubspec.yaml pubspec.yaml.bak
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
 
-          # 2. Atur nama tampilan aplikasi
-          sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe App"/g' android/app/src/main/AndroidManifest.xml
-          if [ -f "android/app/src/main/res/values/strings.xml" ]; then
-            sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe App<\/string>/g' android/app/src/main/res/values/strings.xml
+          # kembalikan build.gradle.kts resmi kita
+          if [ -f "build.gradle.kts.bak" ]; then
+            cp build.gradle.kts.bak android/app/build.gradle.kts
           fi
 
-          # 3. Generasi Keystore Permanen
+          # 2. Buat Keystore Permanen
           keytool -genkey -v -keystore android/app/release.keystore \
             -alias oetankayoe \
             -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass "OetanKayoePass2026" -keypass "OetanKayoePass2026" \
             -dname "CN=OetanKayoe, OU=Dev, O=App, L=City, C=ID"
 
-          # 4. Buat key.properties resmi di folder android/
+          # 3. Buat key.properties resmi
           cat <<EOF > android/key.properties
           storePassword=OetanKayoePass2026
           keyPassword=OetanKayoePass2026
           keyAlias=oetankayoe
-          storeFile=app/release.keystore
+          storeFile=release.keystore
           EOF
 
-          # 5. Jalankan generator ikon
+          # 4. Generate Ikon
           flutter pub get
           dart run flutter_launcher_icons
 
@@ -78,3 +81,4 @@ jobs:
           name: Flutter-APK-Release-64bit
           path: build/app/outputs/flutter-apk/app-release.apk
           overwrite: true
+ 
