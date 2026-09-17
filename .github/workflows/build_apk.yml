@@ -35,7 +35,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Files & Auto-Sign APK
+      - name: Generate Android Files & Auto-Sign
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
@@ -44,73 +44,19 @@ jobs:
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
 
-          # 1. Ubah label nama aplikasi di AndroidManifest.xml & strings.xml
+          # Ubah nama tampilan aplikasi
           sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe App"/g' android/app/src/main/AndroidManifest.xml
           if [ -f "android/app/src/main/res/values/strings.xml" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
-          # 2. Buat Keystore konsisten di android/app/release.keystore
+          # Buat Keystore permanen menggunakan password rahasia
           PASS=${KEYSTORE_PASSWORD:-"OetanKayoePass2026"}
-          keytool -genkey -v -keystore android/app/release.keystore \
-            -alias oetankayoe \
+          keytool -genkey -v -keystore ~/.android/debug.keystore \
+            -storepass android -keypass android \
+            -alias androiddebugkey \
             -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass "$PASS" -keypass "$PASS" \
             -dname "CN=OetanKayoe, OU=Dev, O=App, L=City, C=ID"
-
-          # 3. Buat file key.properties di android/
-          cat <<EOF > android/key.properties
-          storePassword=$PASS
-          keyPassword=$PASS
-          keyAlias=oetankayoe
-          storeFile=app/release.keystore
-          EOF
-
-          # 4. Patch android/app/build.gradle secara penuh agar Release Signing aktif
-          python3 -c "
-          import re
-
-          with open('android/app/build.gradle', 'r') as f:
-              code = f.read()
-
-          header = '''
-          def localProperties = new Properties()
-          def localPropertiesFile = rootProject.file('local.properties')
-          if (localPropertiesFile.exists()) {
-              localPropertiesFile.withReader('UTF-8') { reader -> localProperties.load(reader) }
-          }
-
-          def keystoreProperties = new Properties()
-          def keystorePropertiesFile = rootProject.file('key.properties')
-          if (keystorePropertiesFile.exists()) {
-              keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-          }
-          '''
-
-          signing_block = '''
-              signingConfigs {
-                  release {
-                      keyAlias keystoreProperties['keyAlias']
-                      keyPassword keystoreProperties['keyPassword']
-                      storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-                      storePassword keystoreProperties['storePassword']
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                  }
-              }
-          '''
-
-          # Tambahkan loader properties di paling atas
-          code = header + code
-          # Timpa buildTypes bawaan dengan signingConfig release
-          code = re.sub(r'buildTypes\s*\{[\s\S]*?\}\s*\}', signing_block, code)
-
-          with open('android/app/build.gradle', 'w') as f:
-              f.write(code)
-          "
 
           flutter pub get
           dart run flutter_launcher_icons
@@ -124,4 +70,3 @@ jobs:
           name: Flutter-APK-Release-64bit
           path: build/app/outputs/flutter-apk/app-release.apk
           overwrite: true
- 
