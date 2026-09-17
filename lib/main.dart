@@ -49,7 +49,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Oetan Kayoe App'),
+        title: const Text('Oetan Kayoe Flutter App'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       // Menampilkan halaman sesuai indeks yang dipilih
@@ -138,7 +138,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           SizedBox(height: 16),
           Text(
-            'Pengguna Oetan Kayoe',
+            'Pengguna Oetan Kayoe Flutter App',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Text('user@oetankayoe.com', style: TextStyle(color: Colors.grey)),
