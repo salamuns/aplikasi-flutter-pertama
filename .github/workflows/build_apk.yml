@@ -35,37 +35,18 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Files & Setup Permanent Key
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      - name: Generate Android Config & Keystore
         run: |
           flutter config --no-analytics
-          cp pubspec.yaml pubspec.yaml.bak
-          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
-          cp pubspec.yaml.bak pubspec.yaml
-
-          # 1. Ubah Nama Tampilan Application
-          sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe App"/g' android/app/src/main/AndroidManifest.xml
-          if [ -f "android/app/src/main/res/values/strings.xml" ]; then
-            sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe App<\/string>/g' android/app/src/main/res/values/strings.xml
-          fi
-
-          # 2. Buat Keystore Konsisten Pakai Secret / Fallback
-          PASS=${KEYSTORE_PASSWORD:-"OetanKayoePass2026"}
+          
+          # Generasi keystore permanen
           keytool -genkey -v -keystore android/app/release.keystore \
             -alias oetankayoe \
             -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass "$PASS" -keypass "$PASS" \
+            -storepass "OetanKayoePass2026" -keypass "OetanKayoePass2026" \
             -dname "CN=OetanKayoe, OU=Dev, O=App, L=City, C=ID"
 
-          # 3. Buat key.properties resmi standar Flutter
-          cat <<EOF > android/key.properties
-          storePassword=$PASS
-          keyPassword=$PASS
-          keyAlias=oetankayoe
-          storeFile=release.keystore
-          EOF
-
+          # Terapkan ikon dan nama aplikasi
           flutter pub get
           dart run flutter_launcher_icons
 
@@ -78,4 +59,3 @@ jobs:
           name: Flutter-APK-Release-64bit
           path: build/app/outputs/flutter-apk/app-release.apk
           overwrite: true
- 
