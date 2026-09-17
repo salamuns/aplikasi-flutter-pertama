@@ -1,40 +1,41 @@
-name: Build Android APK
+name: Build Flutter APK
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch: # Mengizinkan pemicuan build secara manual dari tab Actions
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-      actions: write
-
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.3.0
 
-      - name: Set up Java / JDK
-        uses: actions/setup-java@v4
+      - name: Setup Java JDK
+        uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
-          cache: 'gradle' # Mengaktifkan caching otomatis untuk file Gradle & dependensi
 
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
 
-      - name: Build APK with Gradle
-        run: ./gradlew assembleRelease --parallel --build-cache
+      - name: Generate Android Files & Secure Pubspec
+        run: |
+          cp pubspec.yaml pubspec.yaml.bak
+          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
+          cp pubspec.yaml.bak pubspec.yaml
+          flutter pub get
+
+      - name: Build APK Release
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
-          path: app/build/outputs/apk/release/*.apk
- 
+          name: Flutter-APK-Release
+          path: build/app/outputs/flutter-apk/app-release.apk
