@@ -1,7 +1,7 @@
 name: aplikasi_flutter
 description: Aplikasi Flutter Pertama
 
-version: 1.0.21+22
+version: 1.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -14,7 +14,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
-  flutter_app_name: ^0.1.1 # 1. Tambahkan package ini
+  flutter_app_name: ^0.1.1
 
 flutter:
   uses-material-design: true
@@ -27,6 +27,5 @@ flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"
   min_sdk_android: 21
 
-# 2. Atur nama tampilan aplikasi di layar HP di sini (Bebas Spasi & Huruf Kapital)
 flutter_app_name:
-  name: "App Flutter Q"
+  name: "Oetan Kayoe AppQ"
