@@ -50,6 +50,9 @@ jobs:
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
+          # Buat direktori ~/.android terlebih dahulu agar tidak FileNotFound
+          mkdir -p ~/.android
+
           # Buat Keystore permanen menggunakan password rahasia
           PASS=${KEYSTORE_PASSWORD:-"OetanKayoePass2026"}
           keytool -genkey -v -keystore ~/.android/debug.keystore \
