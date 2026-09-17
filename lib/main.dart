@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Daftar Dinamo is',
+      title: 'Daftar Dinamis',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
@@ -28,29 +28,23 @@ class DynamicListScreen extends StatefulWidget {
 }
 
 class _DynamicListScreenState extends State<DynamicListScreen> {
-  // 1. List penampung data
   final List<String> _items = ['Item 1', 'Item 2', 'Item 3'];
-  
-  // Controller untuk mengambil teks dari TextField
   final TextEditingController _textController = TextEditingController();
 
-  // 2. Fungsi untuk menambah item
   void _addItem(String title) {
     if (title.trim().isEmpty) return;
     setState(() {
       _items.add(title);
     });
-    _textController.clear(); // Bersihkan input teks setelah ditambah
+    _textController.clear();
   }
 
-  // 3. Fungsi untuk menghapus item berdasarkan indeks
   void _removeItem(int index) {
     setState(() {
       _items.removeAt(index);
     });
   }
 
-  // Dialog konfirmasi/input tambah item
   void _showAddDialog() {
     showDialog(
       context: context,
@@ -90,7 +84,6 @@ class _DynamicListScreenState extends State<DynamicListScreen> {
         title: const Text('Daftar Item Dinamis'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      // Jika list kosong, tampilkan pesan kosong. Jika ada, tampilkan ListView.
       body: _items.isEmpty
           ? const Center(
               child: Text(
@@ -127,3 +120,4 @@ class _DynamicListScreenState extends State<DynamicListScreen> {
     );
   }
 }
+ 
