@@ -19,23 +19,40 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      # 1. Caching Gradle untuk mempercepat kompilasi Android
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # 2. Setup Flutter dengan Caching SDK & Pub
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Generate Android Files & Secure Pubspec
         run: |
+          flutter config --no-analytics
+          git checkout pubspec.yaml 2>/dev/null || true
           cp pubspec.yaml pubspec.yaml.bak
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
           flutter pub get
 
-      - name: Build APK Release
-        run: flutter build apk --release
+      # 3. Build APK 64-bit
+      - name: Build APK Release (64-bit)
+        run: flutter build apk --release --target-platform android-arm64
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Flutter-APK-Release
+          name: Flutter-APK-Release-64bit
           path: build/app/outputs/flutter-apk/app-release.apk
+ 
