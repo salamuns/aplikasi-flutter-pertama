@@ -35,7 +35,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Files, Icon & Secure Pubspec
+      - name: Generate Android Files, Icon, Name & Secure Pubspec
         run: |
           flutter config --no-analytics
           git checkout pubspec.yaml 2>/dev/null || true
@@ -43,8 +43,9 @@ jobs:
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
           flutter pub get
-          # Perintah untuk memproses file assets/icon/app_icon.png menjadi icon aplikasi Android
+          # Memproses ikon dan nama aplikasi
           dart run flutter_launcher_icons
+          dart run flutter_app_name # <-- Tambahan baru
 
       - name: Build APK Release (64-bit)
         run: flutter build apk --release --target-platform android-arm64
