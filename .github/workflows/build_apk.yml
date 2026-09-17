@@ -24,18 +24,16 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Generate Android Files & Secure Pubspec
-        run: |
-          cp pubspec.yaml pubspec.yaml.bak
-          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
-          cp pubspec.yaml.bak pubspec.yaml
-          flutter pub get
+      # Cukup install dependencies secara langsung
+      - name: Install Dependencies
+        run: flutter pub get
 
-      - name: Build APK Release
-        run: flutter build apk --release
+      # Build khusus arsitektur 64-bit (ARM64)
+      - name: Build APK Release (64-bit)
+        run: flutter build apk --release --target-platform android-arm64
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Flutter-APK-Release
+          name: Flutter-APK-Release-64bit
           path: build/app/outputs/flutter-apk/app-release.apk
