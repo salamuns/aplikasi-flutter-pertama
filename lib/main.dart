@@ -10,145 +10,119 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.indigo),
-      home: const DynamicListPage(),
+      title: 'Daftar Dinamis',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      home: const DynamicListScreen(),
     );
   }
 }
 
-// Menggunakan StatefulWidget karena data daftar item bisa berubah-ubah
-class DynamicListPage extends StatefulWidget {
-  const DynamicListPage({super.key});
+class DynamicListScreen extends StatefulWidget {
+  const DynamicListScreen({super.key});
 
   @override
-  State<DynamicListPage> createState() => _DynamicListPageState();
+  State<DynamicListScreen> createState() => _DynamicListScreenState();
 }
 
-class _DynamicListPageState extends State<DynamicListPage> {
-  // 1. Controller untuk menangkap teks input dari user
+class _DynamicListScreenState extends State<DynamicListScreen> {
+  // 1. List penampung data
+  final List<String> _items = ['Item 1', 'Item 2', 'Item 3'];
+  
+  // Controller untuk mengambil teks dari TextField
   final TextEditingController _textController = TextEditingController();
 
-  // 2. List data awal
-  final List<String> _daftarKegiatan = [
-    'Belajar Dasar Flutter',
-    'Membuat Build APK via GitHub Actions',
-    'Eksplorasi ListView Dinamis',
-  ];
-
-  // 3. Fungsi untuk menambah item ke daftar
-  void _tambahItem() {
-    final teks = _textController.text.trim();
-    if (teks.isNotEmpty) {
-      setState(() {
-        _daftarKegiatan.add(teks); // Tambah data baru ke list
-      });
-      _textController.clear(); // Bersihkan kolom input setelah ditambah
-    }
-  }
-
-  // 4. Fungsi untuk menghapus item dari daftar berdasarkan index
-  void _hapusItem(int index) {
-    final itemDihapus = _daftarKegiatan[index];
+  // 2. Fungsi untuk menambah item
+  void _addItem(String title) {
+    if (title.trim().isEmpty) return;
     setState(() {
-      _daftarKegiatan.removeAt(index); // Hapus data dari list
+      _items.add(title);
     });
-
-    // Tampilkan notifikasi singkat (SnackBar)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('"$itemDihapus" berhasil dihapus'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    _textController.clear(); // Bersihkan input teks setelah ditambah
   }
 
-  @override
-  void dispose() {
-    _textController.dispose(); // Hapus controller saat widget dihancurkan
-    super.dispose();
+  // 3. Fungsi untuk menghapus item berdasarkan indeks
+  void _removeItem(int index) {
+    setState(() {
+      _items.removeAt(index);
+    });
+  }
+
+  // Dialog konfirmasi/input tambah item
+  void _showAddDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Tambah Item Baru'),
+          content: TextField(
+            controller: _textController,
+            decoration: const InputDecoration(
+              hintText: 'Masukkan nama item...',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _addItem(_textController.text);
+                Navigator.pop(context);
+              },
+              child: const Text('Tambah'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Dinamis (CRUD)'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        title: const Text('Daftar Item Dinamis'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Bagian Input Teks & Tombol Tambah
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    decoration: const InputDecoration(
-                      labelText: 'Tambah kegiatan baru...',
-                      border: OutlineInputBorder(),
+      // Jika list kosong, tampilkan pesan kosong. Jika ada, tampilkan ListView.
+      body: _items.isEmpty
+          ? const Center(
+              child: Text(
+                'Belum ada item. Klik tombol + untuk menambah.',
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _items.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text('${index + 1}'),
+                    ),
+                    title: Text(_items[index]),
+                    trailing: IconButton(
+                      icon: const Icon(Colors.delete, color: Colors.red),
+                      onPressed: () => _removeItem(index),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16.0,
-                      horizontal: 16.0,
-                    ),
-                  ),
-                  onPressed: _tambahItem,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Tambah'),
-                ),
-              ],
+                );
+              },
             ),
-            const SizedBox(height: 20),
-
-            // Bagian Tampilan ListView (Menggunakan Expanded agar fleksibel mengikuti tinggi layar)
-            Expanded(
-              child: _daftarKegiatan.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Belum ada kegiatan.\nSilakan tambah di atas!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: _daftarKegiatan.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.indigo.shade100,
-                              child: Text(
-                                '${index + 1}',
-                                style: const TextStyle(
-                                  color: Colors.indigo,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            title: Text(_daftarKegiatan[index]),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _hapusItem(index),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddDialog,
+        tooltip: 'Tambah Item',
+        child: const Icon(Icons.add),
       ),
     );
   }
