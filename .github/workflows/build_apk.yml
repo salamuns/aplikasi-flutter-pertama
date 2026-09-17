@@ -43,9 +43,9 @@ jobs:
           cp pubspec.yaml.bak pubspec.yaml
 
           # Ganti nama tampilan aplikasi
-          sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe AppQ"/g' android/app/src/main/AndroidManifest.xml
+          sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe Flutter App"/g' android/app/src/main/AndroidManifest.xml
           if [ -f "android/app/src/main/res/values/strings.xml" ]; then
-            sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe AppQ<\/string>/g' android/app/src/main/res/values/strings.xml
+            sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
           flutter pub get
