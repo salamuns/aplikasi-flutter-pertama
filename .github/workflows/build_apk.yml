@@ -35,6 +35,28 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Generate Android Files, Icon & Secure Pubspec
+        run: |
+          flutter config --no-analytics
+          git checkout pubspec.yaml 2>/dev/null || true
+          cp pubspec.yaml pubspec.yaml.bak
+          
+          # Atur nama tampilan aplikasi langsung pakai parameter --name "Nama Bebas"
+          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe --name "Oetan Kayoe App"
+          
+          cp pubspec.yaml.bak pubspec.yaml
+          flutter pub get
+          dart run flutter_launcher_icons
+
+      - name: Build APK Release (64-bit)
+        run: flutter build apk --release --target-platform android-arm64
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flutter-APK-Release-64bit
+          path: build/app/outputs/flutter-apk/app-release.apk
+
       - name: Generate Android Files, Icon, Name & Secure Pubspec
         run: |
           flutter config --no-analytics
