@@ -39,7 +39,7 @@ jobs:
         run: |
           flutter config --no-analytics
           cp pubspec.yaml pubspec.yaml.bak
-          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe.flutterappQ
+          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
 
           # Ganti nama tampilan aplikasi
