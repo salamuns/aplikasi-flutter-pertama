@@ -19,16 +19,22 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      # Mengaktifkan caching agar download SDK & dependencies jauh lebih cepat
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
-      # Cukup install dependencies secara langsung
-      - name: Install Dependencies
-        run: flutter pub get
+      - name: Disable Flutter Telemetry & Prepare Android
+        run: |
+          flutter config --no-analytics
+          cp pubspec.yaml pubspec.yaml.bak
+          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
+          cp pubspec.yaml.bak pubspec.yaml
+          flutter pub get
 
-      # Build khusus arsitektur 64-bit (ARM64)
+      # Build APK khusus 64-bit (Proses kompilasi jauh lebih cepat)
       - name: Build APK Release (64-bit)
         run: flutter build apk --release --target-platform android-arm64
 
