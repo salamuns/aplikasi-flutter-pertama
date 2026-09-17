@@ -35,31 +35,18 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Files & Auto-Sign
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      - name: Generate Android Files & Icon
         run: |
           flutter config --no-analytics
           cp pubspec.yaml pubspec.yaml.bak
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
 
-          # Ubah nama tampilan aplikasi
+          # Ganti nama tampilan aplikasi
           sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe App"/g' android/app/src/main/AndroidManifest.xml
           if [ -f "android/app/src/main/res/values/strings.xml" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
-
-          # Buat direktori ~/.android terlebih dahulu agar tidak FileNotFound
-          mkdir -p ~/.android
-
-          # Buat Keystore permanen menggunakan password rahasia
-          PASS=${KEYSTORE_PASSWORD:-"OetanKayoePass2026"}
-          keytool -genkey -v -keystore ~/.android/debug.keystore \
-            -storepass android -keypass android \
-            -alias androiddebugkey \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -dname "CN=OetanKayoe, OU=Dev, O=App, L=City, C=ID"
 
           flutter pub get
           dart run flutter_launcher_icons
