@@ -41,6 +41,15 @@ jobs:
           cp pubspec.yaml pubspec.yaml.bak
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
+          
+          # 1. Paksa ubah android:label apapun isinya menjadi "Oetan Kayoe App" di AndroidManifest.xml
+          sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe App"/g' android/app/src/main/AndroidManifest.xml
+          
+          # 2. Jika ada file strings.xml, ubah juga nilai app_name di dalamnya
+          if [ -f "android/app/src/main/res/values/strings.xml" ]; then
+            sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe App<\/string>/g' android/app/src/main/res/values/strings.xml
+          fi
+          
           flutter pub get
           dart run flutter_launcher_icons
 
@@ -53,3 +62,4 @@ jobs:
           name: Flutter-APK-Release-64bit
           path: build/app/outputs/flutter-apk/app-release.apk
           overwrite: true
+ 
