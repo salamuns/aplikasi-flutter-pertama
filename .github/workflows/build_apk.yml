@@ -35,7 +35,12 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Files & Icon
+      - name: Generate Android Files & Setup Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           flutter config --no-analytics
           cp pubspec.yaml pubspec.yaml.bak
@@ -48,10 +53,21 @@ jobs:
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
+          # Decode Keystore biner dari Base64 Secrets
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+
+          # Buat file konfigurasi key.properties untuk Gradle
+          cat <<EOF > android/key.properties
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+
           flutter pub get
           dart run flutter_launcher_icons
 
-      - name: Build APK Release (64-bit)
+      - name: Build APK Release (Signed)
         run: flutter build apk --release --target-platform android-arm64
 
       - name: Upload APK Artifact
@@ -60,3 +76,4 @@ jobs:
           name: Flutter-APK-Release-64bit
           path: build/app/outputs/flutter-apk/app-release.apk
           overwrite: true
+ 
