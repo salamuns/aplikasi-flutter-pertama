@@ -35,23 +35,37 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Config & Keystore
+      - name: Generate Android Files & Setup Signing Key
         run: |
           flutter config --no-analytics
           
-          # Generate folder android bawaan Flutter
+          # 1. Buat struktur folder android bawaan Flutter
           cp pubspec.yaml pubspec.yaml.bak
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
 
-          # Generasi keystore permanen
+          # 2. Atur nama tampilan aplikasi
+          sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe App"/g' android/app/src/main/AndroidManifest.xml
+          if [ -f "android/app/src/main/res/values/strings.xml" ]; then
+            sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe App<\/string>/g' android/app/src/main/res/values/strings.xml
+          fi
+
+          # 3. Generasi Keystore Permanen
           keytool -genkey -v -keystore android/app/release.keystore \
             -alias oetankayoe \
             -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass "OetanKayoePass2026" -keypass "OetanKayoePass2026" \
             -dname "CN=OetanKayoe, OU=Dev, O=App, L=City, C=ID"
 
-          # Terapkan ikon dan nama aplikasi
+          # 4. Buat key.properties resmi di folder android/
+          cat <<EOF > android/key.properties
+          storePassword=OetanKayoePass2026
+          keyPassword=OetanKayoePass2026
+          keyAlias=oetankayoe
+          storeFile=app/release.keystore
+          EOF
+
+          # 5. Jalankan generator ikon
           flutter pub get
           dart run flutter_launcher_icons
 
