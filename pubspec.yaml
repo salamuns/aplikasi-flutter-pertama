@@ -1,8 +1,7 @@
 name: aplikasi_flutter
 description: Aplikasi Flutter Pertama
 
-# Naikkan angkanya saat ingin merilis UPDATE baru (misal dari +1 ke +2)
-version: 1.0.3+7
+version: 1.0.4+8
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -14,6 +13,19 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # 1. Tambahkan package ini di dev_dependencies
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
+
+  # 2. Daftarkan folder assets agar file icon terbaca
+  assets:
+    - assets/icon/app_icon.png
+
+# 3. Konfigurasi pembuat icon otomatis
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
