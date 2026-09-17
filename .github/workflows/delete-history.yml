@@ -1,11 +1,14 @@
 name: Delete Old Workflow Runs
 
 on:
-  workflow_dispatch: # Mengizinkan pemicuan manual dari tombol Actions
+  workflow_dispatch:
 
 jobs:
   del_runs:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
