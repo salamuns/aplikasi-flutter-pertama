@@ -1,45 +1,40 @@
-name: Build Flutter APK
+name: Build Android APK
 
 on:
   push:
-    branches: [ main, master ]
-  workflow_dispatch:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Mengizinkan pemicuan build secara manual dari tab Actions
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      actions: write
+
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.3.0
+        uses: actions/checkout@v4
 
-      - name: Setup Java JDK
-        uses: actions/setup-java@v5
+      - name: Set up Java / JDK
+        uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle' # Mengaktifkan caching otomatis untuk file Gradle & dependensi
 
-      # Mengaktifkan caching agar download SDK & dependencies jauh lebih cepat
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
 
-      - name: Disable Flutter Telemetry & Prepare Android
-        run: |
-          flutter config --no-analytics
-          cp pubspec.yaml pubspec.yaml.bak
-          flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
-          cp pubspec.yaml.bak pubspec.yaml
-          flutter pub get
-
-      # Build APK khusus 64-bit (Proses kompilasi jauh lebih cepat)
-      - name: Build APK Release (64-bit)
-        run: flutter build apk --release --target-platform android-arm64
+      - name: Build APK with Gradle
+        run: ./gradlew assembleRelease --parallel --build-cache
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Flutter-APK-Release-64bit
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: app-release-apk
+          path: app/build/outputs/apk/release/*.apk
+ 
