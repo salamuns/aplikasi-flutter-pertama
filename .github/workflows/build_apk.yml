@@ -54,7 +54,9 @@ jobs:
           fi
 
           # Decode Keystore biner dari Base64 Secrets
-          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          # echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          echo "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 --decode > android/app/upload-keystore.jks
+
 
           # Buat file konfigurasi key.properties untuk Gradle
           cat <<EOF > android/key.properties
