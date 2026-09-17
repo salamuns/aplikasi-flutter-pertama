@@ -1,9 +1,10 @@
 name: Delete Old Workflow Runs
 
 on:
-  schedule:
-    # - cron: '0 0 * * *' # Berjalan otomatis setiap hari jam 00:00 UTC
-  workflow_dispatch: # Memungkinkan kamu menjalankan pembersihan manual kapan saja
+  workflow_dispatch: # Jalankan manual dari tombol Actions
+
+permissions:
+  actions: write # Memberikan izin ke token untuk menghapus history
 
 jobs:
   del_runs:
@@ -12,7 +13,7 @@ jobs:
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          retain_days: 1 # Simpan riwayat hanya 1 hari terakhir
-          keep_minimum_runs: 3 # Selalu sisakan minimal 3 run terbaru
+          retain_days: 0
+          keep_minimum_runs: 2
