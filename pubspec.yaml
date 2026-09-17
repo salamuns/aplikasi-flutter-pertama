@@ -1,7 +1,6 @@
 name: aplikasi_flutter
 description: Aplikasi Flutter Pertama
 
-# Naikkan versi ini setiap kali ingin merilis update di HP
 version: 1.0.4+8
 
 environment:
@@ -14,24 +13,20 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  # Package untuk pemroses icon & nama tampilan HP
   flutter_launcher_icons: ^0.13.1
-  flutter_app_name: ^0.1.1
+  flutter_app_name: ^0.1.1  # <-- Tambahan baru
 
 flutter:
   uses-material-design: true
-
-  # Memasukkan gambar icon ke dalam asset proyek
   assets:
     - assets/icon/app_icon.png
 
-# Konfigurasi 1: Ikon Aplikasi
 flutter_launcher_icons:
   android: true
   ios: false
   image_path: "assets/icon/app_icon.png"
   min_sdk_android: 21
 
-# Konfigurasi 2: Nama Tampilan Aplikasi di Layar HP
+# <-- Tambahan baru untuk menentukan nama tampilan aplikasi di HP
 flutter_app_name:
-  name: "Aplikasi Kece"
+  name: "Nama Aplikasi Kamu"  # Ganti dengan nama aplikasi yang kamu inginkan
