@@ -35,57 +35,50 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Update Version Code & Setup Keystore
+      - name: Setup Keystore & Injection
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           flutter config --no-analytics
 
-          # 1. Update versi pubspec.yaml
+          # 1. Update version di pubspec.yaml (Otomatis menyesuaikan github.run_number)
           BASE_VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
           NEW_VERSION="${BASE_VERSION}+${{ github.run_number }}"
           sed -i "s/^version: .*/version: ${NEW_VERSION}/g" pubspec.yaml
 
-          # 2. Generate project Android
+          # 2. Re-generate struktur Android
           cp pubspec.yaml pubspec.yaml.bak
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
 
-          # Ganti nama aplikasi
+          # Ganti nama tampilan aplikasi
           sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe Flutter App"/g' android/app/src/main/AndroidManifest.xml
           if [ -f "android/app/src/main/res/values/strings.xml" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
-          # 3. Generate Keystore Deterministik (Kunci tidak berubah meski dijalankan ulang)
-          keytool -genkeypair -v \
-            -keystore android/app/upload-keystore.jks \
-            -storetype JKS \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -alias upload \
-            -dname "CN=OetanKayoe, OU=Dev, O=OetanKayoe, L=Jakarta, ST=Jakarta, C=ID" \
-            -storepass "OetanKayoe123!" \
-            -keypass "OetanKayoe123!" \
-            -startdate "2026/01/01 00:00:00"
+          # 3. Decode Keystore asli dari Secret (Dibersihkan dari spasi/enter HP)
+          echo "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 --decode > android/app/upload-keystore.jks
 
-          # 4. Inject konfigurasi key.properties
+          # 4. Buat key.properties untuk Gradle
           cat <<EOF > android/key.properties
-          storePassword=OetanKayoe123!
-          keyPassword=OetanKayoe123!
-          keyAlias=upload
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
           storeFile=upload-keystore.jks
           EOF
 
           flutter pub get
           dart run flutter_launcher_icons
 
-      - name: Print Build Info & Summary
+      - name: Print Build Summary
         run: |
           VERSION_FULL=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2)
-          echo "=========================================="
-          echo "BUILD INFO"
-          echo "Full Version : $VERSION_FULL"
-          echo "=========================================="
-          
-          echo "### 🚀 APK Version Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 APK Build Success" >> $GITHUB_STEP_SUMMARY
+          echo "* **Package Name:** \`com.oetankayoe.flutter_app\`" >> $GITHUB_STEP_SUMMARY
           echo "* **Full Version:** \`$VERSION_FULL\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Build APK Release (Signed)
@@ -97,4 +90,3 @@ jobs:
           name: Flutter-APK-Release-64bit
           path: build/app/outputs/flutter-apk/app-release.apk
           overwrite: true
- 
