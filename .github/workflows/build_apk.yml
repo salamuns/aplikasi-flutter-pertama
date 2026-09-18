@@ -35,7 +35,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Setup Build & Keystore
+      - name: Setup Build & Verify Keystore
         run: |
           flutter config --no-analytics
 
@@ -44,12 +44,12 @@ jobs:
           NEW_VERSION="${BASE_VERSION}+${{ github.run_number }}"
           sed -i "s/^version: .*/version: ${NEW_VERSION}/g" pubspec.yaml
 
-          # 2. Backup Keystore fisik
+          # 2. Backup Keystore fisik jika sudah ter-commit di repo
           if [ -f "android/app/upload-keystore.jks" ]; then
             cp android/app/upload-keystore.jks /tmp/upload-keystore.jks
           fi
 
-          # 3. Generate folder android
+          # 3. Re-generate folder android
           cp pubspec.yaml pubspec.yaml.bak
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
@@ -59,13 +59,25 @@ jobs:
             cp /tmp/upload-keystore.jks android/app/upload-keystore.jks
           fi
 
+          # Jika Keystore fisik belum ada sama sekali, buat versi konsisten
+          if [ ! -f "android/app/upload-keystore.jks" ]; then
+            keytool -genkeypair -v \
+              -keystore android/app/upload-keystore.jks \
+              -storetype JKS \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -alias upload \
+              -dname "CN=OetanKayoe, OU=Dev, O=OetanKayoe, L=Jakarta, ST=Jakarta, C=ID" \
+              -storepass "OetanKayoe123!" \
+              -keypass "OetanKayoe123!"
+          fi
+
           # Ganti nama tampilan aplikasi
           sed -i 's/android:label="[^"]*"/android:label="Oetan Kayoe Flutter App"/g' android/app/src/main/AndroidManifest.xml
           if [ -f "android/app/src/main/res/values/strings.xml" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
-          # 4. INJEKSI LANGSUNG KE GRADLE.PROPERTIES (Aman & Tanpa merusak file gradle)
+          # 4. Injeksi variabel signing ke android/gradle.properties
           KEYSTORE_PATH="$(pwd)/android/app/upload-keystore.jks"
           cat <<EOF >> android/gradle.properties
           android.injected.signing.store.file=$KEYSTORE_PATH
@@ -77,11 +89,29 @@ jobs:
           flutter pub get
           dart run flutter_launcher_icons
 
-      - name: Print Build Summary
+      - name: Print Keystore Diagnostic & Fingerprint
         run: |
           VERSION_FULL=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2)
-          echo "### 🚀 APK Build Success" >> $GITHUB_STEP_SUMMARY
+          
+          echo "=========================================="
+          echo "DETAILED KEYSTORE DIAGNOSTIC"
+          echo "=========================================="
+          
+          # Tampilkan Fingerprint SHA-256 Kunci
+          FINGERPRINT=$(keytool -list -v -keystore android/app/upload-keystore.jks -alias upload -storepass "OetanKayoe123!" | grep "SHA256:" || echo "Keystore Not Found")
+          
+          echo "Full Version : $VERSION_FULL"
+          echo "Keystore Path: android/app/upload-keystore.jks"
+          echo "$FINGERPRINT"
+          echo "=========================================="
+
+          # Tampilkan langsung di halaman Job Summary GitHub Actions
+          echo "### 🔑 Keystore Verification" >> $GITHUB_STEP_SUMMARY
           echo "* **Full Version:** \`$VERSION_FULL\`" >> $GITHUB_STEP_SUMMARY
+          echo "* **Signing Fingerprint:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "$FINGERPRINT" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Build APK Release (Signed)
         run: flutter build apk --release --target-platform android-arm64
