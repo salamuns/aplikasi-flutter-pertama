@@ -15,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           SizedBox(height: 16),
           Text(
-            'Pengguna Oetan Kayoe',
+            'Pengguna Oetan Kayoe AppQ',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Text('user@oetankayoe.com', style: TextStyle(color: Colors.grey)),
