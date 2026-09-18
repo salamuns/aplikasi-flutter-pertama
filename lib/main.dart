@@ -28,17 +28,14 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  // 1. Variabel penanda halaman mana yang sedang aktif (0 = Beranda, 1 = Daftar, 2 = Profil)
   int _selectedIndex = 0;
 
-  // 2. Daftar halaman yang akan ditampilkan sesuai menu bawah yang diklik
   final List<Widget> _pages = [
     const HomeScreen(),
     const ListScreen(),
     const ProfileScreen(),
   ];
 
-  // 3. Fungsi untuk mengupdate posisi tab yang dipilih
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -49,12 +46,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Oetan Kayoe Flutter App'),
+        title: const Text('Oetan Kayoe App'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      // Menampilkan halaman sesuai indeks yang dipilih
       body: _pages[_selectedIndex],
-      // Menu Navigasi Bawah
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -79,8 +74,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 }
 
-// --- Komponen Layar / Halaman ---
-
+// --- Halaman Beranda ---
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -102,27 +96,110 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class ListScreen extends StatelessWidget {
+// --- Halaman Daftar Dinamis (Bisa Tambah & Hapus) ---
+class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 10,
-      itemBuilder: (context, index) {
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: ListTile(
-            leading: CircleAvatar(child: Text('${index + 1}')),
-            title: Text('Item Menu ${index + 1}'),
-            subtitle: const Text('Deskripsi singkat item'),
+  State<ListScreen> createState() => _ListScreenState();
+}
+
+class _ListScreenState extends State<ListScreen> {
+  // 1. Data list awal
+  final List<String> _items = [
+    'Kayu Jati',
+    'Kayu Mahoni',
+    'Kayu Pinus',
+  ];
+
+  final TextEditingController _textController = TextEditingController();
+
+  // 2. Fungsi Tambah Item Baru
+  void _addItem(String name) {
+    if (name.trim().isNotEmpty) {
+      setState(() {
+        _items.add(name);
+      });
+      _textController.clear();
+      Navigator.of(context).pop(); // Tutup dialog setelah tambah
+    }
+  }
+
+  // 3. Fungsi Hapus Item
+  void _removeItem(int index) {
+    setState(() {
+      _items.removeAt(index);
+    });
+  }
+
+  // 4. Dialog Input Item
+  void _showAddDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Tambah Item Baru'),
+          content: TextField(
+            controller: _textController,
+            decoration: const InputDecoration(
+              hintText: 'Masukkan nama item...',
+            ),
+            autofocus: true,
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () => _addItem(_textController.text),
+              child: const Text('Tambah'),
+            ),
+          ],
         );
       },
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _items.isEmpty
+          ? const Center(
+              child: Text(
+                'Belum ada data item.',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _items.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text('${index + 1}'),
+                    ),
+                    title: Text(_items[index]),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _removeItem(index),
+                    ),
+                  ),
+                );
+              },
+            ),
+      // Tombol Tambah (+) di pojok kanan bawah
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddDialog,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
 }
 
+// --- Halaman Profil ---
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -138,7 +215,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           SizedBox(height: 16),
           Text(
-            'Pengguna Oetan Kayoe Flutter App',
+            'Pengguna Oetan Kayoe',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Text('user@oetankayoe.com', style: TextStyle(color: Colors.grey)),
