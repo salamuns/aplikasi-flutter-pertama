@@ -35,7 +35,7 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Setup Build & Signing Config
+      - name: Setup Build & Keystore
         run: |
           flutter config --no-analytics
 
@@ -65,50 +65,6 @@ jobs:
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
-          # 4. Buat key.properties
-          cat <<EOF > android/key.properties
-          storePassword=OetanKayoe123!
-          keyPassword=OetanKayoe123!
-          keyAlias=upload
-          storeFile=upload-keystore.jks
-          EOF
-
-          # 5. PAKSA GRADLE MENGGUNAKAN KEYSTORE RELEASE TERSEBUT
-          # Deteksi apakah menggunakan build.gradle biasa atau Groovy/KTS
-          BUILD_GRADLE="android/app/build.gradle"
-          if [ -f "android/app/build.gradle.kts" ]; then
-            BUILD_GRADLE="android/app/build.gradle.kts"
-          fi
-
-          # Inject konfigurasi signingConfigs dan buildType release langsung ke Gradle
-          cat <<'EOF' >> android/app/build.gradle
-
-          import java.io.FileInputStream
-          import java.util.Properties
-
-          def keystoreProperties = new Properties()
-          def keystorePropertiesFile = rootProject.file('key.properties')
-          if (keystorePropertiesFile.exists()) {
-              keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-          }
-
-          android {
-              signingConfigs {
-                  release {
-                      keyAlias keystoreProperties['keyAlias']
-                      keyPassword keystoreProperties['keyPassword']
-                      storeFile file(keystoreProperties['storeFile'])
-                      storePassword keystoreProperties['storePassword']
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                  }
-              }
-          }
-          EOF
-
           flutter pub get
           dart run flutter_launcher_icons
 
@@ -118,8 +74,15 @@ jobs:
           echo "### 🚀 APK Build Success" >> $GITHUB_STEP_SUMMARY
           echo "* **Full Version:** \`$VERSION_FULL\`" >> $GITHUB_STEP_SUMMARY
 
-      - name: Build APK Release (Signed)
-        run: flutter build apk --release --target-platform android-arm64
+      - name: Build APK Release (Signed via Gradle Properties)
+        run: |
+          KEYSTORE_PATH="$(pwd)/android/app/upload-keystore.jks"
+          flutter build apk --release \
+            --target-platform android-arm64 \
+            --Pandroid.injected.signing.store.file="$KEYSTORE_PATH" \
+            --Pandroid.injected.signing.store.password="OetanKayoe123!" \
+            --Pandroid.injected.signing.key.alias="upload" \
+            --Pandroid.injected.signing.key.password="OetanKayoe123!"
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
