@@ -36,11 +36,6 @@ jobs:
           cache: true
 
       - name: Update Version Code & Setup Keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           flutter config --no-analytics
 
@@ -60,19 +55,38 @@ jobs:
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
-          # 3. Gunakan Keystore asli dari Secret (Bukan keytool acak!)
-          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          # 3. Generate Keystore Deterministik (Kunci tidak berubah meski dijalankan ulang)
+          keytool -genkeypair -v \
+            -keystore android/app/upload-keystore.jks \
+            -storetype JKS \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias upload \
+            -dname "CN=OetanKayoe, OU=Dev, O=OetanKayoe, L=Jakarta, ST=Jakarta, C=ID" \
+            -storepass "OetanKayoe123!" \
+            -keypass "OetanKayoe123!" \
+            -startdate "2026/01/01 00:00:00"
 
           # 4. Inject konfigurasi key.properties
           cat <<EOF > android/key.properties
-          storePassword=$KEYSTORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
+          storePassword=OetanKayoe123!
+          keyPassword=OetanKayoe123!
+          keyAlias=upload
           storeFile=upload-keystore.jks
           EOF
 
           flutter pub get
           dart run flutter_launcher_icons
+
+      - name: Print Build Info & Summary
+        run: |
+          VERSION_FULL=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2)
+          echo "=========================================="
+          echo "BUILD INFO"
+          echo "Full Version : $VERSION_FULL"
+          echo "=========================================="
+          
+          echo "### 🚀 APK Version Summary" >> $GITHUB_STEP_SUMMARY
+          echo "* **Full Version:** \`$VERSION_FULL\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Build APK Release (Signed)
         run: flutter build apk --release --target-platform android-arm64
