@@ -65,6 +65,15 @@ jobs:
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
+          # 4. INJEKSI LANGSUNG KE GRADLE.PROPERTIES (Aman & Tanpa merusak file gradle)
+          KEYSTORE_PATH="$(pwd)/android/app/upload-keystore.jks"
+          cat <<EOF >> android/gradle.properties
+          android.injected.signing.store.file=$KEYSTORE_PATH
+          android.injected.signing.store.password=OetanKayoe123!
+          android.injected.signing.key.alias=upload
+          android.injected.signing.key.password=OetanKayoe123!
+          EOF
+
           flutter pub get
           dart run flutter_launcher_icons
 
@@ -74,17 +83,8 @@ jobs:
           echo "### 🚀 APK Build Success" >> $GITHUB_STEP_SUMMARY
           echo "* **Full Version:** \`$VERSION_FULL\`" >> $GITHUB_STEP_SUMMARY
 
-      - name: Build APK Release (Signed via Gradle Properties)
-        run: |
-          KEYSTORE_PATH="$(pwd)/android/app/upload-keystore.jks"
-          flutter build apk --release \
-            --target-platform android-arm64 \
-            --extra-front-end-options="" \
-            -- \
-            -Pandroid.injected.signing.store.file="$KEYSTORE_PATH" \
-            -Pandroid.injected.signing.store.password="OetanKayoe123!" \
-            -Pandroid.injected.signing.key.alias="upload" \
-            -Pandroid.injected.signing.key.password="OetanKayoe123!"
+      - name: Build APK Release (Signed)
+        run: flutter build apk --release --target-platform android-arm64
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
