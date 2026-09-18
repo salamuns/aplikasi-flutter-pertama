@@ -70,6 +70,24 @@ jobs:
           flutter pub get
           dart run flutter_launcher_icons
 
+      - name: Print Build Info & Summary
+        run: |
+          # Mengambil versi dari pubspec.yaml (misal: 1.0.0)
+          VERSION_NAME=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          
+          echo "=========================================="
+          echo "BUILD INFO"
+          echo "Build Name   : $VERSION_NAME"
+          echo "Build Number : ${{ github.run_number }}"
+          echo "Full Version : $VERSION_NAME+${{ github.run_number }}"
+          echo "=========================================="
+          
+          # Menampilkan informasi di halaman ringkasan (Job Summary) GitHub Actions
+          echo "### 🚀 APK Version Summary" >> $GITHUB_STEP_SUMMARY
+          echo "* **Version Name:** \`$VERSION_NAME\`" >> $GITHUB_STEP_SUMMARY
+          echo "* **Build Number:** \`${{ github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "* **Full Version:** \`$VERSION_NAME+${{ github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
+
       - name: Build APK Release (Signed)
         run: |
           flutter build apk --release \
