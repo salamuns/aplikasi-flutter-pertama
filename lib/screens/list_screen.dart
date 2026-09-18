@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
@@ -8,39 +9,65 @@ class ListScreen extends StatefulWidget {
 }
 
 class _ListScreenState extends State<ListScreen> {
-  final List<String> _items = ['Kayu Jati', 'Kayu Mahoni', 'Kayu Pinus'];
+  List<String> _items = [];
+  bool _isLoading = true;
   final TextEditingController _textController = TextEditingController();
 
-  // 1. Fungsi Tambah Item
+  @override
+  void initState() {
+    super.initState();
+    _loadItems(); // Muat data tersimpan saat halaman pertama kali dibuka
+  }
+
+  // 1. Fungsi Memuat Data dari Penyimpanan Lokal
+  Future<void> _loadItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      // Ambil daftar String dengan kunci 'oetan_items', jika belum ada pakai list bawaan
+      _items = prefs.getStringList('oetan_items') ?? ['Kayu Jati', 'Kayu Mahoni', 'Kayu Pinus'];
+      _isLoading = false;
+    });
+  }
+
+  // 2. Fungsi Menyimpan Data ke Penyimpanan Lokal
+  Future<void> _saveItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('oetan_items', _items);
+  }
+
+  // 3. Fungsi Tambah Item
   void _addItem(String name) {
     if (name.trim().isNotEmpty) {
       setState(() {
         _items.add(name);
       });
+      _saveItems(); // Simpan perubahan
       _textController.clear();
       Navigator.of(context).pop();
     }
   }
 
-  // 2. Fungsi Edit / Ubah Nama Item
+  // 4. Fungsi Edit Item
   void _editItem(int index, String newName) {
     if (newName.trim().isNotEmpty) {
       setState(() {
         _items[index] = newName;
       });
+      _saveItems(); // Simpan perubahan
       _textController.clear();
       Navigator.of(context).pop();
     }
   }
 
-  // 3. Fungsi Hapus Item
+  // 5. Fungsi Hapus Item
   void _removeItem(int index) {
     setState(() {
       _items.removeAt(index);
     });
+    _saveItems(); // Simpan perubahan
   }
 
-  // Dialog untuk Tambah Item Baru
+  // Dialog Tambah Item
   void _showAddDialog() {
     _textController.clear();
     showDialog(
@@ -66,11 +93,9 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  // Dialog untuk Edit / Ubah Item
+  // Dialog Edit Item
   void _showEditDialog(int index) {
-    // Isi TextField dengan nama item yang ada sekarang
     _textController.text = _items[index];
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -96,6 +121,10 @@ class _ListScreenState extends State<ListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       body: _items.isEmpty
           ? const Center(
@@ -108,12 +137,10 @@ class _ListScreenState extends State<ListScreen> {
               itemCount: _items.length,
               itemBuilder: (context, index) {
                 return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
                     leading: CircleAvatar(child: Text('${index + 1}')),
                     title: Text(_items[index]),
-                    // Baris aksi di sebelah kanan (Edit & Hapus)
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -138,3 +165,4 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 }
+ 
