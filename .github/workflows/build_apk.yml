@@ -74,8 +74,7 @@ jobs:
         run: |
           flutter build apk --release \
             --target-platform android-arm64 \
-            --build-name=1.0.1 \
-            --build-number=2
+            --build-number=${{ github.run_number }}
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
