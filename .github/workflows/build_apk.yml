@@ -35,16 +35,16 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Setup Build & Signing
+      - name: Setup Build & Signing Config
         run: |
           flutter config --no-analytics
 
-          # 1. Update version di pubspec.yaml (Otomatis menyesuaikan github.run_number)
+          # 1. Update version di pubspec.yaml
           BASE_VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
           NEW_VERSION="${BASE_VERSION}+${{ github.run_number }}"
           sed -i "s/^version: .*/version: ${NEW_VERSION}/g" pubspec.yaml
 
-          # 2. Amankan Keystore fisik sebelum flutter create .
+          # 2. Backup Keystore fisik
           if [ -f "android/app/upload-keystore.jks" ]; then
             cp android/app/upload-keystore.jks /tmp/upload-keystore.jks
           fi
@@ -54,7 +54,7 @@ jobs:
           flutter create . --platforms=android --android-language kotlin --org com.oetankayoe
           cp pubspec.yaml.bak pubspec.yaml
 
-          # Kembalikan file Keystore fisik
+          # Restore Keystore fisik
           if [ -f "/tmp/upload-keystore.jks" ]; then
             cp /tmp/upload-keystore.jks android/app/upload-keystore.jks
           fi
@@ -65,12 +65,48 @@ jobs:
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">Oetan Kayoe Flutter App<\/string>/g' android/app/src/main/res/values/strings.xml
           fi
 
-          # 4. Inject key.properties
+          # 4. Buat key.properties
           cat <<EOF > android/key.properties
           storePassword=OetanKayoe123!
           keyPassword=OetanKayoe123!
           keyAlias=upload
           storeFile=upload-keystore.jks
+          EOF
+
+          # 5. PAKSA GRADLE MENGGUNAKAN KEYSTORE RELEASE TERSEBUT
+          # Deteksi apakah menggunakan build.gradle biasa atau Groovy/KTS
+          BUILD_GRADLE="android/app/build.gradle"
+          if [ -f "android/app/build.gradle.kts" ]; then
+            BUILD_GRADLE="android/app/build.gradle.kts"
+          fi
+
+          # Inject konfigurasi signingConfigs dan buildType release langsung ke Gradle
+          cat <<'EOF' >> android/app/build.gradle
+
+          import java.io.FileInputStream
+          import java.util.Properties
+
+          def keystoreProperties = new Properties()
+          def keystorePropertiesFile = rootProject.file('key.properties')
+          if (keystorePropertiesFile.exists()) {
+              keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+          }
+
+          android {
+              signingConfigs {
+                  release {
+                      keyAlias keystoreProperties['keyAlias']
+                      keyPassword keystoreProperties['keyPassword']
+                      storeFile file(keystoreProperties['storeFile'])
+                      storePassword keystoreProperties['storePassword']
+                  }
+              }
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+          }
           EOF
 
           flutter pub get
