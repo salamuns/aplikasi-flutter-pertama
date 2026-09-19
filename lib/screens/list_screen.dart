@@ -186,6 +186,38 @@ class _ListScreenState extends State<ListScreen> {
                             child: Text('${index + 1}'),
                           ),
                           title: Text(item),
+                          ListTile(
+  leading: CircleAvatar(
+    child: Text('${index + 1}'),
+  ),
+  title: Text(item),
+  // Tambahkan event onTap untuk navigasi ke halaman detail
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailScreen(
+          itemName: item,
+          itemIndex: originalIndex,
+        ),
+      ),
+    );
+  },
+  trailing: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      IconButton(
+        icon: const Icon(Icons.edit, color: Colors.blue),
+        onPressed: () => _showEditDialog(originalIndex),
+      ),
+      IconButton(
+        icon: const Icon(Icons.delete, color: Colors.red),
+        onPressed: () => _removeItem(item),
+      ),
+    ],
+  ),
+)
+
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
