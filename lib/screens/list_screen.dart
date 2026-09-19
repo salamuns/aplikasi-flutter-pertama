@@ -37,7 +37,7 @@ class _ListScreenState extends State<ListScreen> {
     await prefs.setStringList('oetan_items', _items);
   }
 
-  // 3. Fungsi Tambah Item
+  // 3. Fungsi Tambah Item Baru
   void _addItem(String name) {
     if (name.trim().isNotEmpty) {
       setState(() {
@@ -49,7 +49,7 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 
-  // 4. Fungsi Edit Item
+  // 4. Fungsi Edit / Ubah Nama Item
   void _editItem(int index, String newName) {
     if (newName.trim().isNotEmpty) {
       setState(() {
@@ -127,7 +127,7 @@ class _ListScreenState extends State<ListScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Filter list berdasarkan kata kunci di Search Bar
+    // Filter daftar berdasarkan kata kunci pencarian
     final filteredItems = _items.where((item) {
       return item.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
@@ -165,7 +165,7 @@ class _ListScreenState extends State<ListScreen> {
             ),
           ),
 
-          // Daftar Item
+          // Daftar Item (ListView)
           Expanded(
             child: filteredItems.isEmpty
                 ? const Center(
@@ -188,7 +188,7 @@ class _ListScreenState extends State<ListScreen> {
                             child: Text('${index + 1}'),
                           ),
                           title: Text(item),
-                          // Navigasi saat item diklik
+                          // Navigasi ke Halaman Detail saat item diklik
                           onTap: () {
                             Navigator.push(
                               context,
@@ -200,7 +200,7 @@ class _ListScreenState extends State<ListScreen> {
                               ),
                             );
                           },
-                          // Tombol Edit & Hapus
+                          // Tombol Aksi Edit & Hapus
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -228,4 +228,3 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 }
- 
