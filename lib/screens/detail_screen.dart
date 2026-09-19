@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 
 class DetailScreen extends StatelessWidget {
   final String itemName;
-  final int itemIndex;
 
-  const DetailScreen({
-    super.key,
-    required this.itemName,
-    required this.itemIndex,
-  });
+  const DetailScreen({super.key, required this.itemName});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detail: $itemName'),
+        title: Text(itemName),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Padding(
@@ -26,35 +21,25 @@ class DetailScreen extends StatelessWidget {
               child: CircleAvatar(
                 radius: 40,
                 child: Text(
-                  '${itemIndex + 1}',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  itemName[0].toUpperCase(),
+                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
             const SizedBox(height: 24),
             Text(
-              'Nama Item:',
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+              'Nama Item: $itemName',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            Text(
-              itemName,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Divider(height: 32),
+            const SizedBox(height: 12),
             const Text(
-              'Deskripsi:',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              'Deskripsi Detail:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
-              'Ini adalah halaman detail untuk $itemName. Kamu bisa menambahkan informasi atau properti lengkap lainnya di sini.',
-              style: const TextStyle(fontSize: 16),
+              'Ini adalah halaman detail untuk item "$itemName". Kamu bisa menambahkan informasi seperti deskripsi lengkap, tanggal dibuat, atau atribut lainnya di halaman ini.',
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
