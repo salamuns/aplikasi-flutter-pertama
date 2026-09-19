@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
 import 'screens/list_screen.dart';
 import 'screens/profile_screen.dart';
 
-void main() {
+// Notifier global untuk mengontrol tema di seluruh aplikasi
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Membaca tema tersimpan dari SharedPreferences saat aplikasi dibuka
+  final prefs = await SharedPreferences.getInstance();
+  final isDark = prefs.getBool('is_dark_mode') ?? false;
+  themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
+
   runApp(const MyApp());
 }
 
@@ -12,13 +23,32 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Oetan Kayoe Flutter App',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.green, // Mengubah warna tema Material 3
-        useMaterial3: true,            // Memastikan Material 3 aktif
-      ),
-      home: const MainNavigationScreen(),
+    // ValueListenableBuilder mendengarkan perubahan tema secara instan
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, currentMode, child) {
+        return MaterialApp(
+          title: 'Oetan Kayoe Flutter App',
+          debugShowCheckedModeBanner: false,
+          
+          // Theme versi Light (Terang)
+          theme: ThemeData(
+            colorSchemeSeed: Colors.green,
+            brightness: Brightness.light,
+            useMaterial3: true,
+          ),
+          
+          // Theme versi Dark (Gelap)
+          darkTheme: ThemeData(
+            colorSchemeSeed: Colors.green,
+            brightness: Brightness.dark,
+            useMaterial3: true,
+          ),
+          
+          themeMode: currentMode, // Mengontrol mode tema aktif
+          home: const MainNavigationScreen(),
+        );
+      },
     );
   }
 }
@@ -39,15 +69,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ProfileScreen(),
   ];
 
+  // Fungsi untuk mengganti tema & menyimpan pilihannya
+  Future<void> _toggleTheme() async {
+    final isDark = themeNotifier.value == ThemeMode.dark;
+    themeNotifier.value = isDark ? ThemeMode.light : ThemeMode.dark;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_dark_mode', !isDark);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = themeNotifier.value == ThemeMode.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Oetan Kayoe App'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          // Tombol Sakelar (Toggle) Dark/Light Mode di AppBar
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            tooltip: isDark ? 'Mode Terang' : 'Mode Gelap',
+            onPressed: _toggleTheme,
+          ),
+        ],
       ),
       body: _pages[_selectedIndex],
-      // Menggunakan NavigationBar khas Material 3
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
@@ -76,4 +124,3 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 }
- 
