@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'detail_screen.dart';
 
 class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
@@ -10,7 +11,7 @@ class ListScreen extends StatefulWidget {
 
 class _ListScreenState extends State<ListScreen> {
   List<String> _items = [];
-  String _searchQuery = ''; // 1. Variabel penampung kata kunci pencarian
+  String _searchQuery = '';
   bool _isLoading = true;
   final TextEditingController _textController = TextEditingController();
 
@@ -20,22 +21,23 @@ class _ListScreenState extends State<ListScreen> {
     _loadItems();
   }
 
-  // Memuat Data dari SharedPreferences
+  // 1. Memuat Data dari SharedPreferences
   Future<void> _loadItems() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _items = prefs.getStringList('oetan_items') ?? ['Kayu Jati', 'Kayu Mahoni', 'Kayu Pinus'];
+      _items = prefs.getStringList('oetan_items') ??
+          ['Kayu Jati', 'Kayu Mahoni', 'Kayu Pinus'];
       _isLoading = false;
     });
   }
 
-  // Menyimpan Data ke SharedPreferences
+  // 2. Menyimpan Data ke SharedPreferences
   Future<void> _saveItems() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('oetan_items', _items);
   }
 
-  // Tambah Item
+  // 3. Fungsi Tambah Item
   void _addItem(String name) {
     if (name.trim().isNotEmpty) {
       setState(() {
@@ -47,7 +49,7 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 
-  // Edit Item
+  // 4. Fungsi Edit Item
   void _editItem(int index, String newName) {
     if (newName.trim().isNotEmpty) {
       setState(() {
@@ -59,7 +61,7 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 
-  // Hapus Item
+  // 5. Fungsi Hapus Item
   void _removeItem(String itemValue) {
     setState(() {
       _items.remove(itemValue);
@@ -67,7 +69,7 @@ class _ListScreenState extends State<ListScreen> {
     _saveItems();
   }
 
-  // Dialog Tambah Item
+  // Modal Dialog Tambah Item
   void _showAddDialog() {
     _textController.clear();
     showDialog(
@@ -93,7 +95,7 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  // Dialog Edit Item
+  // Modal Dialog Edit Item
   void _showEditDialog(int originalIndex) {
     _textController.text = _items[originalIndex];
     showDialog(
@@ -125,7 +127,7 @@ class _ListScreenState extends State<ListScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // 2. Memfilter list berdasarkan kata kunci pencarian
+    // Filter list berdasarkan kata kunci di Search Bar
     final filteredItems = _items.where((item) {
       return item.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
@@ -133,7 +135,7 @@ class _ListScreenState extends State<ListScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // 3. Widget Search Bar di bagian atas
+          // Widget Kolom Pencarian (Search Bar)
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextField(
@@ -163,7 +165,7 @@ class _ListScreenState extends State<ListScreen> {
             ),
           ),
 
-          // 4. Daftar Item Hasil Filter
+          // Daftar Item
           Expanded(
             child: filteredItems.isEmpty
                 ? const Center(
@@ -186,38 +188,19 @@ class _ListScreenState extends State<ListScreen> {
                             child: Text('${index + 1}'),
                           ),
                           title: Text(item),
-                          ListTile(
-  leading: CircleAvatar(
-    child: Text('${index + 1}'),
-  ),
-  title: Text(item),
-  // Tambahkan event onTap untuk navigasi ke halaman detail
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DetailScreen(
-          itemName: item,
-          itemIndex: originalIndex,
-        ),
-      ),
-    );
-  },
-  trailing: Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      IconButton(
-        icon: const Icon(Icons.edit, color: Colors.blue),
-        onPressed: () => _showEditDialog(originalIndex),
-      ),
-      IconButton(
-        icon: const Icon(Icons.delete, color: Colors.red),
-        onPressed: () => _removeItem(item),
-      ),
-    ],
-  ),
-)
-
+                          // Navigasi saat item diklik
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailScreen(
+                                  itemName: item,
+                                  itemIndex: originalIndex,
+                                ),
+                              ),
+                            );
+                          },
+                          // Tombol Edit & Hapus
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
