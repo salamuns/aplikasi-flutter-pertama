@@ -14,7 +14,7 @@ class DetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detail: $itemName'),
+        title: Text('Detail $itemName'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Padding(
@@ -34,26 +34,20 @@ class DetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               'Nama Item:',
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
             Text(
               itemName,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const Divider(height: 32),
-            const Text(
+            Text(
               'Deskripsi:',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
             const SizedBox(height: 8),
             Text(
-              'Ini adalah halaman detail untuk $itemName. Kamu bisa menambahkan informasi atau properti lengkap lainnya di sini.',
+              'Ini adalah halaman detail untuk $itemName.',
               style: const TextStyle(fontSize: 16),
             ),
           ],
